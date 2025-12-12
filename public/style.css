@@ -1,0 +1,448 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a3d 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #fff;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Snowflakes Animation */
+.snowflakes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.snowflake {
+    position: absolute;
+    top: -10%;
+    color: #fff;
+    font-size: 1.5em;
+    opacity: 0.8;
+    animation: fall linear infinite;
+}
+
+.snowflake:nth-child(1) { left: 10%; animation-duration: 10s; animation-delay: 0s; }
+.snowflake:nth-child(2) { left: 20%; animation-duration: 12s; animation-delay: 2s; }
+.snowflake:nth-child(3) { left: 35%; animation-duration: 9s; animation-delay: 4s; }
+.snowflake:nth-child(4) { left: 50%; animation-duration: 11s; animation-delay: 1s; }
+.snowflake:nth-child(5) { left: 65%; animation-duration: 13s; animation-delay: 3s; }
+.snowflake:nth-child(6) { left: 80%; animation-duration: 10s; animation-delay: 5s; }
+.snowflake:nth-child(7) { left: 90%; animation-duration: 14s; animation-delay: 2s; }
+
+@keyframes fall {
+    0% {
+        top: -10%;
+        transform: translateX(0) rotate(0deg);
+    }
+    100% {
+        top: 110%;
+        transform: translateX(100px) rotate(360deg);
+    }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 3px solid #c41e3a;
+    padding-bottom: 20px;
+}
+
+h1 {
+    color: #c41e3a;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 10px;
+}
+
+.player-info {
+    color: #2d5a3d;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #ddd;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 15px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    background: #e0e0e0;
+}
+
+.tab-btn.active {
+    background: #2d5a3d;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.player-setup {
+    text-align: center;
+    padding: 40px;
+}
+
+.player-setup h2 {
+    color: #2d5a3d;
+    margin-bottom: 30px;
+}
+
+input[type="text"] {
+    padding: 12px;
+    font-size: 1.1em;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 20px;
+}
+
+.btn {
+    padding: 12px 30px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #c41e3a;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #a01729;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #2d5a3d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #1e4028;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: #d9534f;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c9302c;
+}
+
+.btn-bingo {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #333;
+    font-size: 1.5em;
+    padding: 20px 50px;
+    display: block;
+    margin: 30px auto;
+    animation: pulse 1s infinite;
+}
+
+.btn-bingo:disabled {
+    background: linear-gradient(135deg, #ccc, #999);
+    color: #666;
+    cursor: not-allowed;
+    animation: none;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.game-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.bingo-card {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto 30px;
+    padding: 20px;
+    background: white;
+    border: 5px solid #c41e3a;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.bingo-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    background: #fff;
+    border: 2px solid #2d5a3d;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #333;
+    transition: all 0.3s;
+    font-size: 0.9em;
+}
+
+.bingo-cell:hover {
+    background: #f0f0f0;
+}
+
+.bingo-cell.free {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    font-size: 1.2em;
+}
+
+.bingo-cell.marked {
+    background: #c41e3a;
+    color: white;
+    transform: scale(0.95);
+}
+
+/* Marked called term - stays red permanently */
+.bingo-cell.marked-called {
+    background: #c41e3a;
+    color: white;
+    transform: scale(0.95);
+}
+
+/* Marked uncalled term - red but will fade */
+.bingo-cell.marked-uncalled {
+    background: #c41e3a;
+    color: white;
+    transform: scale(0.95);
+    transition: background 0.5s ease, color 0.5s ease;
+}
+
+.bingo-cell.called {
+    background: #90EE90;
+    border-color: #2d5a3d;
+    animation: highlight 0.5s;
+}
+
+@keyframes highlight {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.game-status {
+    margin-top: 30px;
+}
+
+.game-status h3, .called-history h3, .terms-list h3 {
+    color: #2d5a3d;
+    margin-bottom: 15px;
+}
+
+.called-terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    min-height: 60px;
+}
+
+.called-term {
+    padding: 8px 15px;
+    background: #c41e3a;
+    color: white;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.term-management, .host-controls {
+    padding: 20px;
+}
+
+.add-term {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.add-term input {
+    flex: 1;
+    margin: 0;
+}
+
+.terms-list {
+    margin-top: 30px;
+}
+
+#termsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.term-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    color: #333;
+}
+
+.term-item button {
+    background: #d9534f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.term-item button:hover {
+    background: #c9302c;
+}
+
+.term-select {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px;
+    font-size: 1.1em;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.call-term {
+    margin-bottom: 40px;
+}
+
+.bingo-alert {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    padding: 40px 60px;
+    border-radius: 20px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #333;
+    z-index: 1000;
+    animation: popIn 0.5s;
+    white-space: pre-line;
+    line-height: 1.5;
+}
+
+@keyframes popIn {
+    0% { transform: translate(-50%, -50%) scale(0); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@media print {
+    body {
+        background: white;
+    }
+
+    .snowflakes, .tabs, .game-controls, .btn, .game-status, header .player-info {
+        display: none !important;
+    }
+
+    .container {
+        box-shadow: none;
+        padding: 20px;
+    }
+
+    .bingo-card {
+        max-width: 100%;
+        page-break-inside: avoid;
+    }
+
+    .bingo-cell {
+        border: 2px solid #000;
+        background: white !important;
+        color: #000 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+
+    .tabs {
+        flex-direction: column;
+    }
+
+    .bingo-card {
+        gap: 5px;
+        padding: 10px;
+    }
+
+    .bingo-cell {
+        font-size: 0.7em;
+        padding: 5px;
+    }
+
+    .game-controls {
+        flex-direction: column;
+    }
+}

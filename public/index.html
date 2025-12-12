@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Bingo Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="snowflakes" aria-hidden="true">
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+        <div class="snowflake">❅</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>🎄 Christmas Bingo 🎅</h1>
+            <div class="player-info">
+                <span id="playerCount">Players: 0</span>
+            </div>
+        </header>
+
+        <!-- Play Tab -->
+        <div class="tab-content active" id="play-tab">
+            <div class="player-setup" id="playerSetup">
+                <h2>Welcome to Christmas Bingo!</h2>
+                <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+                <button id="joinGame" class="btn btn-primary">Join Game</button>
+            </div>
+
+            <div class="game-area" id="gameArea" style="display: none;">
+                <div id="bingoCard" class="bingo-card"></div>
+
+                <button id="bingoButton" class="btn btn-bingo" style="display: none;">BINGO! 🎉</button>
+            </div>
+        </div>
+
+        <div id="bingoAlert" class="bingo-alert" style="display: none;"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "christmas-bingo-game",
+  "version": "1.0.0",
+  "description": "Multiplayer Christmas-themed bingo game with admin control panel",
+  "main": "server.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "docker:build": "docker build -t christmas-bingo:latest .",
+    "docker:run": "docker run -p 8080:8080 -e ADMIN_PASSWORD=christmas2024 christmas-bingo:latest",
+    "docker:compose": "docker-compose up",
+    "docker:compose:build": "docker-compose up --build"
+  },
+  "keywords": [
+    "bingo",
+    "game",
+    "christmas",
+    "multiplayer",
+    "socket.io"
+  ],
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

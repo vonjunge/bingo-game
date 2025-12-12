@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  bingo-server:
+    image: christmas-bingo:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-christmas2024}
+      - NODE_ENV=production
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        monitor: 30s
+        max_failure_ratio: 0.3
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+      placement:
+        constraints:
+          - node.role == worker
+        preferences:
+          - spread: node.labels.zone
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.example.description=Christmas Bingo Game Server"
+      - "com.example.version=1.0.0"
+    networks:
+      - bingo-network
+
+networks:
+  bingo-network:
+    driver: overlay
+    attachable: true

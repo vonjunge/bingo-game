@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Christmas Bingo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+    <div class="snowflakes" aria-hidden="true">
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+        <div class="snowflake">❅</div>
+    </div>
+
+    <!-- Login Screen -->
+    <div class="container" id="loginContainer">
+        <header>
+            <h1>🎄 Admin Portal 🎅</h1>
+        </header>
+        <div class="login-area">
+            <h2>Enter Admin Password</h2>
+            <input type="password" id="adminPassword" placeholder="Password">
+            <button id="loginBtn" class="btn btn-primary">Login</button>
+            <p class="login-error" id="loginError" style="display: none;"></p>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div class="container" id="adminDashboard" style="display: none;">
+        <header>
+            <h1>🎄 Admin Dashboard 🎅</h1>
+            <div class="player-info">
+                <span id="playerCount">Players: 0</span>
+            </div>
+        </header>
+
+        <div class="admin-grid">
+            <!-- Term Management Section -->
+            <div class="admin-section">
+                <h2>📝 Manage Terms</h2>
+                <div class="add-term">
+                    <input type="text" id="newTerm" placeholder="Enter new term">
+                    <button id="addTerm" class="btn btn-primary">Add</button>
+                </div>
+                <div class="terms-list">
+                    <h3>Current Terms (<span id="termCount">0</span>):</h3>
+                    <div id="termsList"></div>
+                </div>
+            </div>
+
+            <!-- Game Caller Section -->
+            <div class="admin-section caller-section">
+                <h2>📢 Call Terms</h2>
+
+                <div class="caller-stats">
+                    <div class="stat-box">
+                        <div class="stat-number" id="remainingCount">0</div>
+                        <div class="stat-label">Remaining</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="calledCount">0</div>
+                        <div class="stat-label">Called</div>
+                    </div>
+                </div>
+
+                <div class="call-term-area">
+                    <select id="termSelect" class="term-select">
+                        <option value="">Select a term to call...</option>
+                    </select>
+                    <button id="callTerm" class="btn btn-call">Call Term</button>
+                </div>
+
+                <div class="quick-call">
+                    <h3>Quick Call (Click to Call):</h3>
+                    <div id="quickCallButtons"></div>
+                </div>
+
+                <div class="called-history">
+                    <h3>📜 Called Terms History:</h3>
+                    <div id="calledTermsList" class="called-terms"></div>
+                </div>
+
+                <div class="game-controls">
+                    <button id="resetGame" class="btn btn-danger">Reset Game</button>
+                </div>
+            </div>
+
+            <!-- Leaderboard Section -->
+            <div class="admin-section leaderboard-section">
+                <h2>📊 Live Leaderboard</h2>
+                <table class="leaderboard-table" id="adminLeaderboard">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminLeaderboardBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 20px; color: #999;">
+                                Waiting for players...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bingo Announcements -->
+        <div class="bingo-announcements" id="bingoAnnouncements">
+            <h2>🎉 Bingo Announcements</h2>
+            <div id="bingoList"></div>
+        </div>
+
+        <div id="bingoAlert" class="bingo-alert" style="display: none;"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

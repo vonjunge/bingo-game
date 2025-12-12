@@ -1,0 +1,393 @@
+let socket;
+let terms = [];
+let calledTerms = [];
+let isAuthenticated = false;
+let adminToken = null;
+let bingoAnnouncements = [];
+let leaderboard = [];
+
+// Helper function to make authenticated API calls
+async function adminFetch(url, options = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`,
+        ...options.headers
+    };
+    return fetch(url, { ...options, headers });
+}
+
+// Login handling
+document.getElementById('loginBtn').addEventListener('click', async () => {
+    const password = document.getElementById('adminPassword').value;
+    const errorElement = document.getElementById('loginError');
+
+    try {
+        const response = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            isAuthenticated = true;
+            adminToken = data.token;
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+            initializeAdmin();
+        } else {
+            errorElement.textContent = 'Invalid password. Please try again.';
+            errorElement.style.display = 'block';
+        }
+    } catch (error) {
+        errorElement.textContent = 'Login failed. Please try again.';
+        errorElement.style.display = 'block';
+    }
+});
+
+// Allow Enter key for login
+document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        document.getElementById('loginBtn').click();
+    }
+});
+
+function initializeAdmin() {
+    socket = io();
+
+    // Socket event handlers
+    socket.on('initialData', (data) => {
+        terms = data.terms;
+        calledTerms = data.calledTerms;
+        leaderboard = data.leaderboard || [];
+        document.getElementById('playerCount').textContent = `Players: ${data.playerCount}`;
+
+        loadTerms();
+        updateCallerInterface();
+        renderLeaderboard();
+    });
+
+    socket.on('termsUpdated', (updatedTerms) => {
+        terms = updatedTerms;
+        renderTermsList();
+        updateCallerInterface();
+    });
+
+    socket.on('termCalled', (data) => {
+        calledTerms = data.calledTerms;
+        updateCallerInterface();
+    });
+
+    socket.on('termUncalled', (data) => {
+        calledTerms = data.calledTerms;
+        updateCallerInterface();
+    });
+
+    socket.on('leaderboardUpdate', (data) => {
+        leaderboard = data;
+        renderLeaderboard();
+    });
+
+    socket.on('gameReset', () => {
+        calledTerms = [];
+        bingoAnnouncements = [];
+        leaderboard = [];
+        updateCallerInterface();
+        renderBingoAnnouncements();
+        renderLeaderboard();
+    });
+
+    socket.on('bingoAnnouncement', (data) => {
+        const announcement = {
+            playerName: data.playerName,
+            position: data.position,
+            time: new Date().toLocaleTimeString()
+        };
+        bingoAnnouncements.unshift(announcement);
+        renderBingoAnnouncements();
+        showBingoAlert(`${data.playerName} called BINGO! (#${data.position})`);
+    });
+
+    socket.on('playerCountUpdate', (count) => {
+        document.getElementById('playerCount').textContent = `Players: ${count}`;
+    });
+
+    // Load initial data
+    loadTerms();
+
+    // Event listeners
+    document.getElementById('addTerm').addEventListener('click', addTerm);
+    document.getElementById('newTerm').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addTerm();
+    });
+
+    document.getElementById('callTerm').addEventListener('click', callTermFromSelect);
+    document.getElementById('resetGame').addEventListener('click', resetGame);
+}
+
+// Term management
+async function loadTerms() {
+    const response = await adminFetch('/api/admin/terms');
+    terms = await response.json();
+    renderTermsList();
+    updateCallerInterface();
+}
+
+function renderTermsList() {
+    const termsList = document.getElementById('termsList');
+    termsList.innerHTML = '';
+
+    document.getElementById('termCount').textContent = terms.length;
+
+    terms.forEach((term, index) => {
+        const div = document.createElement('div');
+        div.className = 'term-item';
+        div.innerHTML = `
+            <span>${term}</span>
+            <button onclick="deleteTerm(${index})">Delete</button>
+        `;
+        termsList.appendChild(div);
+    });
+}
+
+async function addTerm() {
+    const input = document.getElementById('newTerm');
+    const term = input.value.trim();
+
+    if (term) {
+        const response = await adminFetch('/api/admin/terms', {
+            method: 'POST',
+            body: JSON.stringify({ term })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            input.value = '';
+            await loadTerms();
+        } else {
+            alert(data.message);
+        }
+    }
+}
+
+async function deleteTerm(index) {
+    await adminFetch(`/api/admin/terms/${index}`, { method: 'DELETE' });
+    await loadTerms();
+}
+
+// Caller interface
+function updateCallerInterface() {
+    updateStats();
+    updateTermSelect();
+    renderQuickCallButtons();
+    renderCalledTerms();
+}
+
+function updateStats() {
+    const remaining = terms.filter(term => !calledTerms.includes(term)).length;
+    document.getElementById('remainingCount').textContent = remaining;
+    document.getElementById('calledCount').textContent = calledTerms.length;
+}
+
+function updateTermSelect() {
+    const select = document.getElementById('termSelect');
+    select.innerHTML = '<option value="">Select a term to call...</option>';
+
+    terms.forEach(term => {
+        if (!calledTerms.includes(term)) {
+            const option = document.createElement('option');
+            option.value = term;
+            option.textContent = term;
+            select.appendChild(option);
+        }
+    });
+}
+
+function renderQuickCallButtons() {
+    const container = document.getElementById('quickCallButtons');
+    container.innerHTML = '';
+
+    terms.forEach(term => {
+        const button = document.createElement('button');
+        button.className = 'quick-call-btn';
+        button.textContent = term;
+        button.disabled = calledTerms.includes(term);
+
+        if (!button.disabled) {
+            button.addEventListener('click', () => callTerm(term));
+        }
+
+        container.appendChild(button);
+    });
+}
+
+function renderCalledTerms() {
+    const list = document.getElementById('calledTermsList');
+    list.innerHTML = '';
+
+    if (calledTerms.length === 0) {
+        list.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">No terms called yet</p>';
+        return;
+    }
+
+    calledTerms.slice().reverse().forEach(term => {
+        const span = document.createElement('span');
+        span.className = 'called-term';
+        span.style.display = 'inline-flex';
+        span.style.alignItems = 'center';
+        span.style.gap = '8px';
+        
+        const termText = document.createElement('span');
+        termText.textContent = term;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '×';
+        removeBtn.title = 'Remove from called terms';
+        removeBtn.style.cssText = 'background: #c41e3a; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; padding: 0;';
+        removeBtn.addEventListener('click', () => uncallTerm(term));
+        
+        span.appendChild(termText);
+        span.appendChild(removeBtn);
+        list.appendChild(span);
+    });
+}
+
+async function uncallTerm(term) {
+    if (!confirm(`Remove "${term}" from called terms?`)) {
+        return;
+    }
+    
+    const response = await adminFetch('/api/admin/uncall-term', {
+        method: 'POST',
+        body: JSON.stringify({ term })
+    });
+
+    const data = await response.json();
+    if (data.success) {
+        calledTerms = data.calledTerms;
+        renderCalledTerms();
+        renderTermButtons();
+    } else {
+        alert('Failed to uncall term: ' + data.message);
+    }
+}
+
+async function callTermFromSelect() {
+    const select = document.getElementById('termSelect');
+    const term = select.value;
+
+    if (term) {
+        await callTerm(term);
+        select.value = '';
+    } else {
+        alert('Please select a term to call');
+    }
+}
+
+async function callTerm(term) {
+    const response = await adminFetch('/api/admin/call-term', {
+        method: 'POST',
+        body: JSON.stringify({ term })
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+        alert(data.message);
+    }
+}
+
+async function resetGame() {
+    await adminFetch('/api/admin/reset-game', { method: 'POST' });
+    bingoAnnouncements = [];
+    renderBingoAnnouncements();
+}
+
+// Bingo announcements
+function renderBingoAnnouncements() {
+    const list = document.getElementById('bingoList');
+    list.innerHTML = '';
+
+    if (bingoAnnouncements.length === 0) {
+        list.innerHTML = '<p style="color: #666; text-align: center;">No bingo winners yet</p>';
+        return;
+    }
+
+    bingoAnnouncements.forEach(announcement => {
+        const div = document.createElement('div');
+        div.className = 'bingo-item';
+        div.innerHTML = `
+            <span>🎉 #${announcement.position} - ${announcement.playerName}</span>
+            <span class="time">${announcement.time}</span>
+        `;
+        list.appendChild(div);
+    });
+}
+
+// Leaderboard
+function renderLeaderboard() {
+    const tbody = document.getElementById('adminLeaderboardBody');
+    
+    if (!leaderboard || leaderboard.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 20px; color: #999;">
+                    Waiting for players...
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    const cardSize = 16; // 4x4 card
+    
+    tbody.innerHTML = leaderboard.map(player => {
+        const rankDisplay = player.rank <= 3 
+            ? ['🥇', '🥈', '🥉'][player.rank - 1] 
+            : `#${player.rank}`;
+        // Progress is out of 16 (the card size), not calledTerms.length
+        const progressPercent = Math.round((player.validClicks / cardSize) * 100);
+        const rowClass = player.hasBingo ? 'bingo-winner-row' : (player.disconnected ? 'disconnected-row' : '');
+        
+        return `
+            <tr class="${rowClass}">
+                <td style="text-align: center; font-weight: bold; font-size: 1.2em; color: #333;">
+                    ${rankDisplay}
+                </td>
+                <td style="color: #333;">
+                    ${player.name}${player.disconnected ? ' <span style="color: #999; font-size: 0.8em;">(left)</span>' : ''}
+                    ${player.hasBingo ? '<span class="bingo-badge">🎉 BINGO!</span>' : ''}
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="flex: 1; height: 20px; background: #eee; border-radius: 10px; overflow: hidden;">
+                            <div style="height: 100%; width: ${progressPercent}%; background: linear-gradient(90deg, #2d5a3d, #4CAF50);"></div>
+                        </div>
+                        <span style="min-width: 60px; font-size: 0.9em; color: #333;">${player.validClicks}/${cardSize}</span>
+                    </div>
+                </td>
+                <td style="text-align: center;">
+                    ${player.hasBingo 
+                        ? `<span style="color: #c41e3a; font-weight: bold;">🏆 Winner #${player.bingoPosition}</span>` 
+                        : (player.disconnected ? '<span style="color: #999;">Left</span>' : '<span style="color: #666;">Playing</span>')}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function showBingoAlert(message) {
+    const alert = document.getElementById('bingoAlert');
+    alert.textContent = message;
+    alert.style.display = 'block';
+
+    // Play a sound notification if available
+    try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE');
+        audio.play().catch(() => {});
+    } catch (e) {}
+
+    setTimeout(() => {
+        alert.style.display = 'none';
+    }, 5000);
+}
