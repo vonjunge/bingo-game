@@ -254,10 +254,6 @@ function renderCalledTerms() {
 }
 
 async function uncallTerm(term) {
-    if (!confirm(`Remove "${term}" from called terms?`)) {
-        return;
-    }
-    
     const response = await adminFetch('/api/admin/uncall-term', {
         method: 'POST',
         body: JSON.stringify({ term })
@@ -349,6 +345,12 @@ function renderLeaderboard() {
         const progressPercent = Math.round((player.validClicks / cardSize) * 100);
         const rowClass = player.hasBingo ? 'bingo-winner-row' : (player.disconnected ? 'disconnected-row' : '');
         
+        // Format clicked terms - highlight valid (called) ones in green
+        const clickedTermsDisplay = (player.clickedTerms || []).map(term => {
+            const isCalled = calledTerms.includes(term);
+            return `<span style="display: inline-block; padding: 2px 6px; margin: 2px; border-radius: 4px; font-size: 0.75em; ${isCalled ? 'background: #d4edda; color: #155724;' : 'background: #f8d7da; color: #721c24;'}">${term}</span>`;
+        }).join('');
+        
         return `
             <tr class="${rowClass}">
                 <td style="text-align: center; font-weight: bold; font-size: 1.2em; color: #333;">
@@ -370,6 +372,12 @@ function renderLeaderboard() {
                     ${player.hasBingo 
                         ? `<span style="color: #c41e3a; font-weight: bold;">🏆 Winner #${player.bingoPosition}</span>` 
                         : (player.disconnected ? '<span style="color: #999;">Left</span>' : '<span style="color: #666;">Playing</span>')}
+                </td>
+            </tr>
+            <tr class="${rowClass}" style="border-bottom: 2px solid #ddd;">
+                <td colspan="4" style="padding: 5px 10px; background: #f9f9f9;">
+                    <strong style="color: #333; font-size: 0.85em;">Clicked:</strong> 
+                    ${clickedTermsDisplay || '<span style="color: #999; font-size: 0.8em;">None yet</span>'}
                 </td>
             </tr>
         `;

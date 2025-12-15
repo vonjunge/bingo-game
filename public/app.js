@@ -258,39 +258,26 @@ function handleCellClick(cell, term, index) {
 
 function checkBingo() {
     // Win condition: 
-    // 1. ALL called terms on the card must be marked
-    // 2. NO uncalled terms can be marked (prevents clicking everything quickly)
+    // ALL 16 boxes must be marked AND all 16 terms must have been called
+    // Player wins when they complete their entire card with valid clicks
     
     if (currentCard.length !== 16) {
         return false;
     }
     
-    // Find all called terms that are on this player's card
-    const calledTermsOnCard = currentCard.filter(term => calledTerms.includes(term));
-    
-    // Must have at least some called terms to win
-    if (calledTermsOnCard.length === 0) {
-        return false;
-    }
-    
-    // Check each cell
+    // Check that ALL 16 cells are marked AND all 16 terms are called
     for (let i = 0; i < currentCard.length; i++) {
         const term = currentCard[i];
         const isCalled = calledTerms.includes(term);
         const isMarked = markedCells.has(i);
         
-        // If a term is called but NOT marked, no bingo
-        if (isCalled && !isMarked) {
-            return false;
-        }
-        
-        // If a term is NOT called but IS marked, no bingo (prevents spam-clicking)
-        if (!isCalled && isMarked) {
+        // Every cell must be both called AND marked
+        if (!isCalled || !isMarked) {
             return false;
         }
     }
     
-    // All called terms are marked AND no uncalled terms are marked
+    // All 16 cells are marked and all 16 terms have been called
     return true;
 }
 

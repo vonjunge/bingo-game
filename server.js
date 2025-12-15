@@ -53,7 +53,8 @@ function calculateLeaderboard() {
     hasBingo: p.hasBingo || false,
     bingoPosition: p.bingoPosition || null,
     bingoTime: p.bingoTime || null,
-    disconnected: p.disconnected || false
+    disconnected: p.disconnected || false,
+    clickedTerms: p.clickedTerms || []
   })).sort((a, b) => {
     // BINGO winners are sorted by their frozen position
     if (a.hasBingo && b.hasBingo) {
