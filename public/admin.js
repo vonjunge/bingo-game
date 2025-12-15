@@ -13,7 +13,22 @@ async function adminFetch(url, options = {}) {
         'Authorization': `Bearer ${adminToken}`,
         ...options.headers
     };
-    return fetch(url, { ...options, headers });
+    
+    const response = await fetch(url, { ...options, headers });
+    
+    // Check if response is OK and is JSON
+    const contentType = response.headers.get('content-type');
+    if (!response.ok) {
+        // Try to parse error as JSON, fallback to status text
+        if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+        } else {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+    }
+    
+    return response;
 }
 
 // Login handling

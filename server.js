@@ -35,10 +35,17 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'christmas2024';
 
 // Helper function to validate admin
 function validateAdminSession(req, res, next) {
-  const adminToken = req.headers.authorization?.split(' ')[1];
-  if (!adminToken) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, message: 'Unauthorized: Missing or invalid authorization header' });
   }
+  
+  const adminToken = authHeader.split(' ')[1];
+  if (!adminToken || !adminToken.startsWith('admin_token_')) {
+    return res.status(401).json({ success: false, message: 'Unauthorized: Invalid token format' });
+  }
+  
+  // Token is valid (basic validation - in production, use proper JWT)
   next();
 }
 
@@ -331,6 +338,12 @@ io.on('connection', (socket) => {
       broadcastLeaderboard();
     }
   });
+});
+
+// Error handling middleware - must be after all routes
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
 });
 
 // Start Server
