@@ -13,15 +13,18 @@ const path = require('path');
 app.use(express.static('public'));
 app.use(express.json());
 
+// Load initial terms from environment variable or use empty array
+const getInitialTerms = () => {
+  const termsEnv = process.env.BINGO_TERMS;
+  if (termsEnv) {
+    return termsEnv.split(',').map(term => term.trim()).filter(term => term.length > 0);
+  }
+  return [];
+};
+
 // Game State - Managed by Server/Admin
 let gameState = {
-  terms: [
-    'Santa Claus', 'Reindeer', 'Snowman', 'Christmas Tree', 'Presents',
-    'Candy Cane', 'Mistletoe', 'Jingle Bells', 'Elf', 'North Pole',
-    'Stocking', 'Ornament', 'Sleigh', 'Chimney', 'Gingerbread',
-    'Hot Cocoa', 'Wreath', 'Star', 'Angel', 'Fireplace',
-    'Cookies', 'Caroling', 'Nativity', 'Bells', 'Snowflake'
-  ],
+  terms: getInitialTerms(),
   calledTerms: [],
   players: {},
   bingoWinners: [],

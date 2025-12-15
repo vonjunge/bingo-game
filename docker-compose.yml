@@ -11,6 +11,7 @@ services:
       - PORT=8080
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-christmas2024}
       - NODE_ENV=production
+      - BINGO_TERMS=Santa Claus,Reindeer,Snowman,Christmas Tree,Presents,Candy Cane,Mistletoe,Jingle Bells,Elf,North Pole,Stocking,Ornament,Sleigh,Chimney,Gingerbread,Hot Cocoa,Wreath,Star,Angel,Fireplace,Cookies,Caroling,Nativity,Bells,Snowflake
     restart: unless-stopped
     container_name: christmas-bingo-server
     healthcheck:
