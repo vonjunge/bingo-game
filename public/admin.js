@@ -10,13 +10,12 @@ let leaderboard = [];
 async function adminFetch(url, options = {}) {
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${adminToken}`,
+        'X-Admin-Token': adminToken,
         ...options.headers
     };
     
     console.log('Making request to:', url);
     console.log('With token:', adminToken);
-    console.log('Auth header:', `Bearer ${adminToken}`);
     
     const response = await fetch(url, { ...options, headers });
     

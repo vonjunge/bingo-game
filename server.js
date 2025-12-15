@@ -34,25 +34,21 @@ let gameState = {
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'christmas2024';
 
 // Helper function to validate admin
+// Uses custom header to avoid being blocked by reverse proxy
 function validateAdminSession(req, res, next) {
-  const authHeader = req.headers.authorization;
-  console.log('Auth header:', authHeader);
+  const adminToken = req.headers['x-admin-token'];
   
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log('Missing or invalid Bearer header');
-    return res.status(401).json({ success: false, message: 'Unauthorized: Missing or invalid authorization header' });
+  // Check if token header exists
+  if (!adminToken) {
+    return res.status(401).json({ success: false, message: 'Unauthorized: Missing admin token' });
   }
   
-  const adminToken = authHeader.split(' ')[1];
-  console.log('Extracted token:', adminToken);
-  
-  if (!adminToken || !adminToken.startsWith('admin_token_')) {
-    console.log('Invalid token format - does not start with admin_token_');
+  // Validate token format
+  if (!adminToken.startsWith('admin_token_')) {
     return res.status(401).json({ success: false, message: 'Unauthorized: Invalid token format' });
   }
   
-  console.log('Token validated successfully');
-  // Token is valid (basic validation - in production, use proper JWT)
+  // Token is valid
   next();
 }
 
