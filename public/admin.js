@@ -84,11 +84,6 @@ function initializeAdmin() {
         updateCallerInterface();
     });
 
-    socket.on('leaderboardUpdate', (data) => {
-        leaderboard = data;
-        renderLeaderboard();
-    });
-
     socket.on('gameReset', () => {
         calledTerms = [];
         bingoAnnouncements = [];
@@ -98,15 +93,31 @@ function initializeAdmin() {
         renderLeaderboard();
     });
 
-    socket.on('bingoAnnouncement', (data) => {
-        const announcement = {
-            playerName: data.playerName,
-            position: data.position,
-            time: new Date().toLocaleTimeString()
-        };
-        bingoAnnouncements.unshift(announcement);
-        renderBingoAnnouncements();
-        showBingoAlert(`${data.playerName} called BINGO! (#${data.position})`);
+    // Admin watches for BINGO winners via leaderboard updates
+    // When a player gets BINGO, the leaderboard will show it
+    socket.on('leaderboardUpdate', (data) => {
+        const previousLeaderboard = leaderboard;
+        leaderboard = data;
+        renderLeaderboard();
+        
+        // Check for new BINGO winners and add to announcements
+        data.forEach(player => {
+            if (player.hasBingo) {
+                // Check if this is a new BINGO we haven't announced yet
+                const alreadyAnnounced = bingoAnnouncements.some(a => a.playerId === player.id);
+                if (!alreadyAnnounced) {
+                    const announcement = {
+                        playerId: player.id,
+                        playerName: player.name,
+                        position: player.bingoPosition,
+                        time: new Date().toLocaleTimeString()
+                    };
+                    bingoAnnouncements.unshift(announcement);
+                    renderBingoAnnouncements();
+                    showBingoAlert(`${player.name} called BINGO! (#${player.bingoPosition})`);
+                }
+            }
+        });
     });
 
     socket.on('playerCountUpdate', (count) => {

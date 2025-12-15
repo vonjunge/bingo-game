@@ -306,11 +306,6 @@ async function loadTerms() {
     terms = data.terms;
 }
 
-function renderCalledTerms() {
-    // Players should not see called terms - this is now only for admin
-    // Keep function for compatibility but don't render anything
-}
-
 function showBingoAlert(message) {
     const alert = document.getElementById('bingoAlert');
     alert.textContent = message;
