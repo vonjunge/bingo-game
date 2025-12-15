@@ -153,24 +153,36 @@ async function addTerm() {
     const term = input.value.trim();
 
     if (term) {
-        const response = await adminFetch('/api/admin/terms', {
-            method: 'POST',
-            body: JSON.stringify({ term })
-        });
+        try {
+            const response = await adminFetch('/api/admin/terms', {
+                method: 'POST',
+                body: JSON.stringify({ term })
+            });
 
-        const data = await response.json();
-        if (data.success) {
-            input.value = '';
-            await loadTerms();
-        } else {
-            alert(data.message);
+            const data = await response.json();
+            if (data.success) {
+                input.value = '';
+                // Terms will be updated via socket 'termsUpdated' event
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('Failed to add term: ' + error.message);
         }
     }
 }
 
 async function deleteTerm(index) {
-    await adminFetch(`/api/admin/terms/${index}`, { method: 'DELETE' });
-    await loadTerms();
+    try {
+        const response = await adminFetch(`/api/admin/terms/${index}`, { method: 'DELETE' });
+        const data = await response.json();
+        if (!data.success) {
+            alert('Failed to delete term: ' + data.message);
+        }
+        // Terms will be updated via socket 'termsUpdated' event
+    } catch (error) {
+        alert('Failed to delete term: ' + error.message);
+    }
 }
 
 // Caller interface
@@ -251,18 +263,19 @@ function renderCalledTerms() {
 }
 
 async function uncallTerm(term) {
-    const response = await adminFetch('/api/admin/uncall-term', {
-        method: 'POST',
-        body: JSON.stringify({ term })
-    });
+    try {
+        const response = await adminFetch('/api/admin/uncall-term', {
+            method: 'POST',
+            body: JSON.stringify({ term })
+        });
 
-    const data = await response.json();
-    if (data.success) {
-        calledTerms = data.calledTerms;
-        renderCalledTerms();
-        renderTermButtons();
-    } else {
-        alert('Failed to uncall term: ' + data.message);
+        const data = await response.json();
+        if (!data.success) {
+            alert('Failed to uncall term: ' + data.message);
+        }
+        // UI will be updated via socket 'termUncalled' event
+    } catch (error) {
+        alert('Failed to uncall term: ' + error.message);
     }
 }
 
@@ -279,21 +292,33 @@ async function callTermFromSelect() {
 }
 
 async function callTerm(term) {
-    const response = await adminFetch('/api/admin/call-term', {
-        method: 'POST',
-        body: JSON.stringify({ term })
-    });
+    try {
+        const response = await adminFetch('/api/admin/call-term', {
+            method: 'POST',
+            body: JSON.stringify({ term })
+        });
 
-    const data = await response.json();
-    if (!data.success) {
-        alert(data.message);
+        const data = await response.json();
+        if (!data.success) {
+            alert(data.message);
+        }
+        // UI will be updated via socket 'termCalled' event
+    } catch (error) {
+        alert('Failed to call term: ' + error.message);
     }
 }
 
 async function resetGame() {
-    await adminFetch('/api/admin/reset-game', { method: 'POST' });
-    bingoAnnouncements = [];
-    renderBingoAnnouncements();
+    try {
+        const response = await adminFetch('/api/admin/reset-game', { method: 'POST' });
+        const data = await response.json();
+        if (!data.success) {
+            alert('Failed to reset game');
+        }
+        // UI will be updated via socket 'gameReset' event
+    } catch (error) {
+        alert('Failed to reset game: ' + error.message);
+    }
 }
 
 // Bingo announcements
