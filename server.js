@@ -36,15 +36,22 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'christmas2024';
 // Helper function to validate admin
 function validateAdminSession(req, res, next) {
   const authHeader = req.headers.authorization;
+  console.log('Auth header:', authHeader);
+  
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('Missing or invalid Bearer header');
     return res.status(401).json({ success: false, message: 'Unauthorized: Missing or invalid authorization header' });
   }
   
   const adminToken = authHeader.split(' ')[1];
+  console.log('Extracted token:', adminToken);
+  
   if (!adminToken || !adminToken.startsWith('admin_token_')) {
+    console.log('Invalid token format - does not start with admin_token_');
     return res.status(401).json({ success: false, message: 'Unauthorized: Invalid token format' });
   }
   
+  console.log('Token validated successfully');
   // Token is valid (basic validation - in production, use proper JWT)
   next();
 }
