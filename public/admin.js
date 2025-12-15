@@ -63,7 +63,7 @@ function initializeAdmin() {
         leaderboard = data.leaderboard || [];
         document.getElementById('playerCount').textContent = `Players: ${data.playerCount}`;
 
-        loadTerms();
+        renderTermsList();
         updateCallerInterface();
         renderLeaderboard();
     });
@@ -112,9 +112,6 @@ function initializeAdmin() {
     socket.on('playerCountUpdate', (count) => {
         document.getElementById('playerCount').textContent = `Players: ${count}`;
     });
-
-    // Load initial data
-    loadTerms();
 
     // Event listeners
     document.getElementById('addTerm').addEventListener('click', addTerm);
