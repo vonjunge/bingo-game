@@ -14,17 +14,27 @@ async function adminFetch(url, options = {}) {
         ...options.headers
     };
     
+    console.log('Making request to:', url);
+    console.log('With token:', adminToken);
+    console.log('Auth header:', `Bearer ${adminToken}`);
+    
     const response = await fetch(url, { ...options, headers });
     
     // Check if response is OK and is JSON
     const contentType = response.headers.get('content-type');
+    console.log('Response status:', response.status);
+    console.log('Response content-type:', contentType);
+    
     if (!response.ok) {
         // Try to parse error as JSON, fallback to status text
         if (contentType && contentType.includes('application/json')) {
             const errorData = await response.json();
+            console.log('Error data:', errorData);
             throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
         } else {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const textError = await response.text();
+            console.log('Error text:', textError);
+            throw new Error(`HTTP ${response.status}: ${response.statusText} - ${textError}`);
         }
     }
     
